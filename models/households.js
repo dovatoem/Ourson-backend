@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const kidsSchema = mongoose.Schema({
-	name: String,
+	kidName: String,
   ageMonths: Number
 });
 
@@ -13,7 +13,7 @@ const householdSchema = mongoose.Schema({
   weeklyRecipes: [{ baby: { type: mongoose.Schema.Types.ObjectId, ref: 'babyRecipes' }, adult: { type: mongoose.Schema.Types.ObjectId, ref: 'adultRecipes' }}],
   likedRecipes:  [{ baby: { type: mongoose.Schema.Types.ObjectId, ref: 'babyRecipes' }, adult: { type: mongoose.Schema.Types.ObjectId, ref: 'adultRecipes' }}], 
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }], 
-  Date: Date, 
+  createdAt: Date, 
   tastedFoods: [{ type: mongoose.Schema.Types.ObjectId, ref: 'tastedFoods' }]
 });
 

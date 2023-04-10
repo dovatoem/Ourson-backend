@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const dietSchema = mongoose.Schema({
-    name : String,
-    type: String,
+    dietName : String,
+    dietType: String,
    });
 
 const Diet = mongoose.model('diets', dietSchema);
