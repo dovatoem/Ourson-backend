@@ -9,6 +9,7 @@ const { checkBody } = require('../modules/checkBody');
 const bcrypt = require('bcrypt');
 const uid2 = require('uid2');
 
+// Save admin user in users collection
 router.post('/signup', (req, res) => {
   if (!checkBody(req.body, ['firstName', 'email', 'password'])) {
     res.json({ result: false, error: 'Missing or empty fields' });
@@ -51,6 +52,7 @@ router.post('/signin', (req, res) => {
 });
 
 
+// create a household for an admin user
 router.post('/profile', (req, res) => {
   if (!checkBody(req.body, ['hhSize', 'kidsCount'])) {
     res.json({ result: false, error: 'Missing or empty fields' });
@@ -113,7 +115,7 @@ router.post('/profile', (req, res) => {
   });
 
 
- // add a guest user in users collection and in households collection 
+ // Save a guest user in users collection and in households collection
 router.post('/signupGuest', (req, res) => {
     if (!checkBody(req.body, ['firstName', 'email', 'password'])) {
       res.json({ result: false, error: 'Missing or empty fields' });
@@ -132,12 +134,13 @@ router.post('/signupGuest', (req, res) => {
         });
         newUser.save().then(guest => {
           res.json({ result: true, token: guest.token, firstName: guest.firstName, email: guest.email, type: guest.type });
-
+          // Find in users collection the admin user for this guest user and get admin id
           User.findOne({ token: req.body.token }).then(admin => {
             if (admin === null) {
               res.json({ result: false, error: 'Admin not found in users collection' });
               return;
             };
+            // Thanks to admin id find in households collection the household created by admin user
             Household.findOne({ users: admin._id }).then(household => {
               if (household === null) {
                 res.json({ result: false, error: 'Admin not found in Household' });
@@ -157,7 +160,6 @@ router.post('/signupGuest', (req, res) => {
         res.json({ result: false, error: 'Guest already exists in users collection' });
       }
     });
-
   });
 
 
