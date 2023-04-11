@@ -1,8 +1,6 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
 
-require('../models/connection');
-const TastedFood = require('../models/tastedFoods');
-
+const TastedFood = require("../models/tastedfoods");
 
 module.exports = router;
