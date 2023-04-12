@@ -104,4 +104,17 @@ router.post("/weekly", (req, res) => {
   });
 });
 
+
+router.get("/babyTest", (req, res) => {
+  BabyRecipe.findOne({title: 'Ma première purée de carotte'}).then((recipe) => {
+     res.json({ recipe});
+  })})
+
+router.get("/adultTest", (req, res) => {
+  AdultRecipe.findOne({title: 'Patate douce sautée'}).then((recipe) => {
+     res.json({ recipe });
+    })})
+
+   
+
 module.exports = router;
