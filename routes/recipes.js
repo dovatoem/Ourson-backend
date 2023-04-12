@@ -50,27 +50,52 @@ router.post("/weekly", (req, res) => {
         //Si >7 jours (604800000 ms) regeneration et on renvoie les recettes de weeklyRecipes
         if (timepast < 604800000) {
           //On va chercher toutes les recettes bébés
-          BabyRecipe.find().then((data) => {
-            babyIDList = data.map((data) => {
-              return data._id;
-            });
+          BabyRecipe.find().then((babyRecipes) => {
+            let babyIDList = babyRecipes.map((recipe) => recipe._id);
             console.log(babyIDList);
-            // on en prend 14 avec des nombres aléatoires via la fonction generateRandomRecipes
-            randomizedWeeklyBabyRecipes = generateRandomRecipes(babyIDList);
+            let randomizedWeeklyBabyRecipes = generateRandomRecipes(babyIDList);
             console.log(randomizedWeeklyBabyRecipes);
-            // ATTENTION A METTRE APRES PARENTS ET POUSSER LE COUPLE
-            // on update la collection household et on y pousse les 14 recettes
-            Household.updateOne(
-              { id: data._id },
-              { weeklyRecipes: randomizedWeeklyBabyRecipes }
-            ).then((data) => {
-              console.log(data);
+            // le reste de votre code pour générer et mettre à jour les recettes hebdomadaires
+
+            BabyRecipe.find().then((data) => {
+              let babyIDList = data.map((data) => {
+                return data._id;
+              });
+              console.log(babyIDList);
+              // on en prend 14 avec des nombres aléatoires via la fonction generateRandomRecipes
+              randomizedWeeklyBabyRecipes = generateRandomRecipes(babyIDList);
+              console.log(randomizedWeeklyBabyRecipes);
+            });
+
+            //On va chercher toutes les recettes parents
+            let randomizedWeeklyAdultRecipes = [];
+            AdultRecipe.find().then((data) => {
+              let adultIDList = data.map((data) => {
+                return data._id;
+              });
+              console.log(adultIDList);
+              // on en prend 14 avec des nombres aléatoires via la fonction generateRandomRecipes
+              randomizedWeeklyAdultRecipes = generateRandomRecipes(adultIDList);
+              console.log(randomizedWeeklyAdultRecipes);
+              let randomizedWeeklyRecipes = [];
+              for (i = 0; i < 14; i++) {
+                randomizedWeeklyRecipes.push({
+                  baby: randomizedWeeklyBabyRecipes[i],
+                  adult: randomizedWeeklyAdultRecipes[i],
+                });
+              }
+
+              // on update la collection household et on y pousse les 14 recettes
+              console.log("randomizedcouples", randomizedWeeklyRecipes);
+              Household.updateOne(
+                { id: data._id },
+                { weeklyRecipes: randomizedWeeklyRecipes }
+              ).then((data) => {
+                console.log(data);
+              });
             });
           });
         }
-        //
-        // LA IL FAUT COPIER LE CODE DES BABYS ET LE FAIRE POUR ADULT PUIS POUSSER LE COUPLE
-        //
 
         //Sinon on prend les recettes de Weekly recipes.
         else {
