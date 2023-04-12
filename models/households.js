@@ -12,19 +12,19 @@ const householdSchema = mongoose.Schema({
   diet: { type: mongoose.Schema.Types.ObjectId, ref: "diets" },
   weeklyRecipes: [
     {
-      baby: { type: mongoose.Schema.Types.ObjectId, ref: "babyrecipes" },
-      adult: { type: mongoose.Schema.Types.ObjectId, ref: "adultrecipes" },
+      baby: { type: mongoose.Schema.Types.ObjectId, ref: "babyRecipes" },
+      adult: { type: mongoose.Schema.Types.ObjectId, ref: "adultRecipes" },
     },
   ],
   likedRecipes: [
     {
-      baby: { type: mongoose.Schema.Types.ObjectId, ref: "babyrecipes" },
-      adult: { type: mongoose.Schema.Types.ObjectId, ref: "adultrecipes" },
+      baby: { type: mongoose.Schema.Types.ObjectId, ref: "babyRecipes" },
+      adult: { type: mongoose.Schema.Types.ObjectId, ref: "adultRecipes" },
     },
   ],
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
   createdAt: Date,
-  Tastedfoods: [{ type: mongoose.Schema.Types.ObjectId, ref: "tastedfoods" }],
+  tastedFoods: [{ type: mongoose.Schema.Types.ObjectId, ref: "tastedFoods" }],
 });
 
 const Household = mongoose.model("households", householdSchema);

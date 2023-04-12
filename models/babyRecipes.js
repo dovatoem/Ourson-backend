@@ -19,6 +19,6 @@ const babyRecipeSchema = mongoose.Schema({
   diets: [{ type: mongoose.Schema.Types.ObjectId, ref: "diets" }],
 });
 
-const BabyRecipe = mongoose.model("babyrecipes", babyRecipeSchema);
+const BabyRecipe = mongoose.model("babyRecipes", babyRecipeSchema);
 
 module.exports = BabyRecipe;

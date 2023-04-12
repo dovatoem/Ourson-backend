@@ -5,6 +5,6 @@ const tastedFoodSchema = mongoose.Schema({
   type: String,
 });
 
-const TastedFood = mongoose.model("tastedfoods", tastedFoodSchema);
+const TastedFood = mongoose.model("tastedFoods", tastedFoodSchema);
 
 module.exports = TastedFood;

@@ -17,6 +17,6 @@ const adultRecipeSchema = mongoose.Schema({
   diets: [{ type: mongoose.Schema.Types.ObjectId, ref: "diets" }],
 });
 
-const AdultRecipe = mongoose.model("adultrecipes", adultRecipeSchema);
+const AdultRecipe = mongoose.model("adultRecipes", adultRecipeSchema);
 
 module.exports = AdultRecipe;

@@ -1,8 +1,8 @@
 var express = require("express");
 var router = express.Router();
 
-const AdultRecipe = require("../models/adultrecipes");
-const BabyRecipe = require("../models/babyrecipes");
+const AdultRecipe = require("../models/adultRecipes");
+const BabyRecipe = require("../models/babyRecipes");
 const Household = require("../models/households");
 const User = require("../models/users");
 
