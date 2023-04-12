@@ -1,6 +1,7 @@
 var express = require("express");
 var router = express.Router();
 
+const TastedFood = require("../models/tastedFoods");
 const User = require("../models/users");
 const Household = require("../models/households");
 const Diet = require("../models/diets");
@@ -186,5 +187,10 @@ router.post("/signupGuest", (req, res) => {
     }
   });
 });
+
+router.get("/test", (req, res) => {
+  TastedFood.find({}).then((food) => {
+    res.json({ food });
+        })})
 
 module.exports = router;
