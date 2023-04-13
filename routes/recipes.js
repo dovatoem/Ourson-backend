@@ -115,6 +115,26 @@ router.get("/adultTest", (req, res) => {
      res.json({ recipe });
     })})
 
-   
+//search for a baby recipe by keyword contained in the title 
+router.post("/searchKeyWord",(req, res) => {
+  const searchRequest = req.body.request; // Get the search body from the request
+
+  //Split the search body into individuals keywords
+  const keywords = searchRequest.split(' ');
+
+  // Use Mongoose to search for items matching the keywords
+  BabyRecipe.find({
+    $and: keywords.map(keyword => ({
+      title: {$regex: keyword, $options:'i'} // Search by recipe title
+   })) 
+  })
+  .then((data) => {
+    if (data.length > 0) {
+      res.json({ result: 'true', recipes: data});
+    } else {
+      res.json({ result: 'false', error: 'Pas de recette correspondante'})
+    }
+   })
+})   
 
 module.exports = router;
