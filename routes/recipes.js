@@ -91,30 +91,73 @@ router.post("/weekly", (req, res) => {
                 { id: data._id },
                 { weeklyRecipes: randomizedWeeklyRecipes }
               ).then((data) => {
-                console.log(data);
+                if (data.modifiedCount > 0) {
+                  // reset du createdAt.
+                  Household.updateOne(
+                    { id: data._id },
+                    { createdAt: Date.now() }
+                  ).then((data) => {
+                    if (data.modifiedCount > 0) {
+                      Household.findOne({ id: data._id })
+                        .populate({
+                          path: "weeklyRecipes",
+                          populate: [{ path: "adult" }, { path: "baby" }],
+                        })
+                        .then((data) => {
+                          res.json({
+                            result: true,
+                            recipes: data.weeklyRecipes,
+                          });
+                        });
+                    }
+                  });
+                } else {
+                  res.json({
+                    result: false,
+                    error: "Recipes were not updated",
+                  });
+                }
               });
             });
           });
         }
-        // reset du createdAt.
         //Sinon on prend les recettes de Weekly recipes.
         else {
+          Household.find({ id: data._id })
+            .populate({
+              path: "weeklyRecipes",
+              populate: [{ path: "adult" }, { path: "baby" }],
+            })
+            .then((data) => {
+              if (data) {
+                res.json({
+                  result: true,
+                  recipes: data.weeklyRecipes,
+                });
+              } else {
+                res.json({
+                  result: false,
+                  error: "No recipe was found",
+                });
+              }
+            });
         }
       });
   });
 });
 
-
 router.get("/babyTest", (req, res) => {
-  BabyRecipe.findOne({title: 'Ma première purée de carotte'}).then((recipe) => {
-     res.json({ recipe});
-  })})
+  BabyRecipe.findOne({ title: "Ma première purée de carotte" }).then(
+    (recipe) => {
+      res.json({ recipe });
+    }
+  );
+});
 
 router.get("/adultTest", (req, res) => {
-  AdultRecipe.findOne({title: 'Patate douce sautée'}).then((recipe) => {
-     res.json({ recipe });
-    })})
-
-   
+  AdultRecipe.findOne({ title: "Patate douce sautée" }).then((recipe) => {
+    res.json({ recipe });
+  });
+});
 
 module.exports = router;
