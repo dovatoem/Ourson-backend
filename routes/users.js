@@ -1,7 +1,6 @@
 var express = require("express");
 var router = express.Router();
 
-const TastedFood = require("../models/tastedFoods");
 const User = require("../models/users");
 const Household = require("../models/households");
 const Diet = require("../models/diets");
@@ -144,13 +143,6 @@ router.post("/signupGuest", (req, res) => {
         type: "guest",
       });
       newUser.save().then((guest) => {
-        res.json({
-          result: true,
-          token: guest.token,
-          firstName: guest.firstName,
-          email: guest.email,
-          type: guest.type,
-        });
         // Find in users collection the admin user for this guest user and get admin id
         User.findOne({ token: req.body.token }).then((admin) => {
           if (admin === null) {
@@ -172,9 +164,15 @@ router.post("/signupGuest", (req, res) => {
             if (household.users.includes(guest._id)) {
               res.json({ result: false, error: "Guest already in household" });
               return;
-            }
+            } 
+            console.log(household.users);
             household.users.push(guest._id);
             household.save();
+            console.log(household.users);
+            res.json({
+              result: true,
+              household: household,
+            });
           });
         });
       });
@@ -188,9 +186,5 @@ router.post("/signupGuest", (req, res) => {
   });
 });
 
-router.get("/test", (req, res) => {
-  TastedFood.find({}).then((food) => {
-    res.json({ food });
-        })})
 
 module.exports = router;
