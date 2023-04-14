@@ -122,7 +122,7 @@ router.post("/searchKeyWord",(req, res) => {
   //Split the search body into individuals keywords
   const keywords = searchRequest.split(' ');
 
-  // Use Mongoose to search for items matching the keywords
+  // Use Mongoose methods to search for items matching the keywords
   BabyRecipe.find({
     $and: keywords.map(keyword => ({
       title: {$regex: keyword, $options:'i'} // Search by recipe title
