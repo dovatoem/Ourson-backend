@@ -44,7 +44,7 @@ router.post("/weekly", (req, res) => {
 
           let timepast = Date.now() - household.createdAt;
           //Si >7 jours (604800000 ms) regeneration et on renvoie les recettes de weeklyRecipes
-          if (timepast > 604800000) {
+          if (timepast < 604800000) {
             //On va chercher toutes les recettes bébés
             BabyRecipe.find({ usage: "repas" }).then((babyRecipes) => {
               let babyIDList = babyRecipes.map((recipe) => recipe._id);
