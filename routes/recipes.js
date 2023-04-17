@@ -225,4 +225,50 @@ router.post("/addLikedRecipe", (req, res) => {
   });
 });
 
+router.post("/removeLikedRecipe", (req, res) => {
+  // Récupérer l'id de l'user via le token
+  User.findOne({ token: req.body.token }).then((user) => {
+    console.log("user", user);
+    if (user === null) {
+      res.json({ result: false, error: "User not found" });
+      return;
+    }
+    // Avec cet id aller chercher l'household correspondant
+    Household.findOne({ users: user._id }).then((household) => {
+      if (household) {
+        // Corriger la mise à jour de l'objet en utilisant le bon champ pour stocker l'ID de la recette
+        Household.updateOne(
+          { _id: household._id },
+          { $pull: { likedRecipes: req.body.recipedID } }
+        ).then((data) => {
+          if (data.nModified > 0) {
+            // Corriger la recherche de l'objet Household mis à jour en utilisant le bon champ pour stocker l'ID
+            Household.findOne({ _id: household._id })
+              .populate({
+                path: "likedRecipes",
+                populate: [{ path: "adult" }, { path: "baby" }],
+              })
+              .then((data) => {
+                res.json({
+                  result: true,
+                  recipes: data.likedRecipes,
+                });
+              });
+          } else {
+            res.json({
+              result: false,
+              error: "Liked recipe was not deleted",
+            });
+          }
+        });
+      } else {
+        res.json({
+          result: false,
+          error: "Household not found",
+        });
+      }
+    });
+  });
+});
+
 module.exports = router;
