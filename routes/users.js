@@ -58,7 +58,15 @@ router.post("/signin", (req, res) => {
     // via user id get household info
     Household.findOne({ users: user._id })
     .populate("users")
-    .populate("diet")    
+    .populate("diet")
+    .populate({
+      path: "weeklyRecipes",
+      populate: [{ path: "adult" }, { path: "baby" }],
+    })
+    .populate({
+      path: "likedRecipes",
+      populate: [{ path: "adult" }, { path: "baby" }],
+    })  
     .then((household) => {
       if (household) {
         res.json({ result: true, user, household })
