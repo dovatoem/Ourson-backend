@@ -58,9 +58,10 @@ router.post("/signin", (req, res) => {
     // via user id get household info
     Household.findOne({ users: user._id })
     .populate("users")
+    .populate("diet")    
     .then((household) => {
       if (household) {
-        res.json({ result: true, household})
+        res.json({ result: true, user, household })
       } else {
         res.json({ result: false, error: "household not found"})
       }
