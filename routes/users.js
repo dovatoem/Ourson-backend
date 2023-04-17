@@ -8,6 +8,7 @@ const { checkBody } = require("../modules/checkBody");
 const bcrypt = require("bcrypt");
 const uid2 = require("uid2");
 
+
 // Save admin user in users collection
 router.post("/signup", (req, res) => {
   if (!checkBody(req.body, ["firstName", "email", "password"])) {
@@ -41,25 +42,34 @@ router.post("/signup", (req, res) => {
   });
 });
 
+
+// signin user and get household info
 router.post("/signin", (req, res) => {
   if (!checkBody(req.body, ["email", "password"])) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
-  User.findOne({ email: { $regex: new RegExp(req.body.email, 'i') } }).then((data) => {
-    if (bcrypt.compareSync(req.body.password, data.password)) {
-      res.json({
-        result: true,
-        token: data.token,
-        firstName: data.firstName,
-        email: data.email,
-        type: data.type,
-      });
+  // get user id
+  User.findOne({ email: { $regex: new RegExp(req.body.email, 'i') } }).then((user) => {
+    if (user === null) {
+      res.json({ result: false, error: "User not found" });
+      return;
+    } else if (bcrypt.compareSync(req.body.password, user.password)) {
+    // via user id get household info
+    Household.findOne({ users: user._id })
+    .populate("users")
+    .then((household) => {
+      if (household) {
+        res.json({ result: true, household})
+      } else {
+        res.json({ result: false, error: "household not found"})
+      }
+    });
     } else {
-      res.json({ result: false, error: "User not found or wrong password" });
+        res.json({ result: false, error: "Wrong password" });
     }
-  });
-});
+})});
+
 
 // create a household for an admin user
 router.post("/profile", (req, res) => {
