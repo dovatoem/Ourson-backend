@@ -193,7 +193,7 @@ router.post("/addLikedRecipe", (req, res) => {
         // Corriger la mise à jour de l'objet en utilisant le bon champ pour stocker l'ID de la recette
         Household.updateOne(
           { _id: household._id },
-          { $push: { likedRecipes: req.body.recipedID } }
+          { $push: { likedRecipes: req.body.recipeID } }
         ).then((data) => {
           if (data.nModified > 0) {
             // Corriger la recherche de l'objet Household mis à jour en utilisant le bon champ pour stocker l'ID
@@ -239,7 +239,7 @@ router.post("/removeLikedRecipe", (req, res) => {
         // Corriger la mise à jour de l'objet en utilisant le bon champ pour stocker l'ID de la recette
         Household.updateOne(
           { _id: household._id },
-          { $pull: { likedRecipes: req.body.recipedID } }
+          { $pull: { likedRecipes: req.body.recipeID } }
         ).then((data) => {
           if (data.nModified > 0) {
             // Corriger la recherche de l'objet Household mis à jour en utilisant le bon champ pour stocker l'ID
