@@ -44,7 +44,7 @@ router.post("/weekly", (req, res) => {
 
           let timepast = Date.now() - household.createdAt;
           //Si >7 jours (604800000 ms) regeneration et on renvoie les recettes de weeklyRecipes
-          if (timepast > 604800000) {
+          if (timepast < 604800000) {
             //On va chercher toutes les recettes bébés
             BabyRecipe.find({ usage: "repas" }).then((babyRecipes) => {
               let babyIDList = babyRecipes.map((recipe) => recipe._id);
@@ -55,14 +55,16 @@ router.post("/weekly", (req, res) => {
               // le reste de votre code pour générer et mettre à jour les recettes hebdomadaires
 
               //On va chercher toutes les recettes parents
-              let randomizedWeeklyAdultRecipes = [];
               AdultRecipe.find().then((adultRecipes) => {
                 let adultIDList = adultRecipes.map((recipe) => recipe._id);
-                console.log(adultIDList);
+                console.log("adult", adultIDList);
                 // on en prend 14 avec des nombres aléatoires via la fonction generateRandomRecipes
-                randomizedWeeklyAdultRecipes =
+                let randomizedWeeklyAdultRecipes =
                   generateRandomRecipes(adultIDList);
-                console.log(randomizedWeeklyAdultRecipes);
+                console.log(
+                  "randomizedAdultRecipes",
+                  randomizedWeeklyAdultRecipes
+                );
 
                 let randomizedWeeklyRecipes = [];
                 for (i = 0; i < 14; i++) {
