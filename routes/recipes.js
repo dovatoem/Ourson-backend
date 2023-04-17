@@ -38,15 +38,15 @@ router.post("/weekly", (req, res) => {
     // avec cet id aller chercher l'household correspondant
     Household.findOne({ users: user._id })
       .populate("users")
-      .then((data) => {
-        if (data) {
+      .then((household) => {
+        if (household) {
           // comparaison de la derniere génération des recettes.
 
-          let timepast = Date.now() - data.createdAt;
+          let timepast = Date.now() - household.createdAt;
           //Si >7 jours (604800000 ms) regeneration et on renvoie les recettes de weeklyRecipes
           if (timepast < 604800000) {
             //On va chercher toutes les recettes bébés
-            BabyRecipe.find().then((babyRecipes) => {
+            BabyRecipe.find({ usage: "repas" }).then((babyRecipes) => {
               let babyIDList = babyRecipes.map((recipe) => recipe._id);
               console.log(babyIDList);
               let randomizedWeeklyBabyRecipes =
@@ -55,16 +55,17 @@ router.post("/weekly", (req, res) => {
               // le reste de votre code pour générer et mettre à jour les recettes hebdomadaires
 
               //On va chercher toutes les recettes parents
-              let randomizedWeeklyAdultRecipes = [];
-              AdultRecipe.find().then((data) => {
-                let adultIDList = data.map((data) => {
-                  return data._id;
-                });
-                console.log(adultIDList);
+              AdultRecipe.find().then((adultRecipes) => {
+                let adultIDList = adultRecipes.map((recipe) => recipe._id);
+                console.log("adult", adultIDList);
                 // on en prend 14 avec des nombres aléatoires via la fonction generateRandomRecipes
-                randomizedWeeklyAdultRecipes =
+                let randomizedWeeklyAdultRecipes =
                   generateRandomRecipes(adultIDList);
-                console.log(randomizedWeeklyAdultRecipes);
+                console.log(
+                  "randomizedAdultRecipes",
+                  randomizedWeeklyAdultRecipes
+                );
+
                 let randomizedWeeklyRecipes = [];
                 for (i = 0; i < 14; i++) {
                   randomizedWeeklyRecipes.push({
@@ -75,14 +76,16 @@ router.post("/weekly", (req, res) => {
 
                 // on update la collection household et on y pousse les 14 recettes
                 console.log("randomizedcouples", randomizedWeeklyRecipes);
+
                 Household.updateOne(
-                  { id: data._id },
+                  { _id: household._id },
                   { weeklyRecipes: randomizedWeeklyRecipes }
                 ).then((data) => {
                   if (data.modifiedCount > 0) {
                     // reset du createdAt.
+
                     Household.updateOne(
-                      { id: data._id },
+                      { _id: household._id },
                       { createdAt: Date.now() }
                     ).then((data) => {
                       if (data.modifiedCount > 0) {
@@ -111,12 +114,13 @@ router.post("/weekly", (req, res) => {
           }
           //Sinon on prend les recettes de Weekly recipes.
           else {
-            Household.find({ id: data._id })
+            Household.findOne({ _id: household._id })
               .populate({
                 path: "weeklyRecipes",
                 populate: [{ path: "adult" }, { path: "baby" }],
               })
               .then((data) => {
+                console.log(data);
                 if (data) {
                   res.json({
                     result: true,

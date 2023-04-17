@@ -15,7 +15,7 @@ router.post("/signup", (req, res) => {
     return;
   }
   // Check if the user has not already been registered
-  User.findOne({ email: req.body.email }).then((data) => {
+  User.findOne({ email: { $regex: new RegExp(req.body.email, 'i') } }).then((data) => {
     if (data === null) {
       const hash = bcrypt.hashSync(req.body.password, 10);
       const newUser = new User({
@@ -46,7 +46,7 @@ router.post("/signin", (req, res) => {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
-  User.findOne({ email: req.body.email }).then((data) => {
+  User.findOne({ email: { $regex: new RegExp(req.body.email, 'i') } }).then((data) => {
     if (bcrypt.compareSync(req.body.password, data.password)) {
       res.json({
         result: true,
@@ -82,12 +82,11 @@ router.post("/profile", (req, res) => {
         res.json({ result: false, error: "Household already exists" });
         return;
       } else {
-        // add the correct number of kids based on kidsCount. The front should send kidName1, ageMonths1 etc.
-        const kidsArray = [];
+         const kids = [];
         for (let i = 1; i <= req.body.kidsCount; i++) {
-          kidsArray.push({
-            kidName: req.body[`kidName${i}`],
-            ageMonths: req.body[`ageMonths${i}`],
+          kids.push({
+            kidName: req.body.kidsArray[0][`kidName${i}`],
+            ageMonths: req.body.kidsArray[0][`ageMonths${i}`],
           });
         }
 
@@ -98,7 +97,7 @@ router.post("/profile", (req, res) => {
             const newHH = new Household({
               hhSize: req.body.hhSize,
               kidsCount: req.body.kidsCount,
-              kids: kidsArray,
+              kids: kids,
               diet: null,
               users: user._id,
               createdAt: new Date(),
@@ -110,7 +109,7 @@ router.post("/profile", (req, res) => {
             const newHH = new Household({
               hhSize: req.body.hhSize,
               kidsCount: req.body.kidsCount,
-              kids: kidsArray,
+              kids: kids,
               diet: diet._id,
               users: user._id,
               createdAt: new Date(),
@@ -132,7 +131,7 @@ router.post("/signupGuest", (req, res) => {
     return;
   }
   // Check if the guest has not already been registered
-  User.findOne({ email: req.body.email }).then((data) => {
+  User.findOne({ email: { $regex: new RegExp(req.body.email, 'i') } }).then((data) => {
     if (data === null) {
       const hash = bcrypt.hashSync(req.body.password, 10);
       const newUser = new User({
