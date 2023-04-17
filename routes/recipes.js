@@ -72,7 +72,6 @@ router.post("/weekly", (req, res) => {
                     baby: randomizedWeeklyBabyRecipes[i],
                     adult: randomizedWeeklyAdultRecipes[i],
                   });
-                  r;
                 }
 
                 // on update la collection household et on y pousse les 14 recettes
