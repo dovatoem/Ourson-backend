@@ -271,4 +271,27 @@ router.post("/removeLikedRecipe", (req, res) => {
   });
 });
 
+//route panic mode 
+router.post("/panicMode", (req, res) => {
+  const ingredientsRequested = req.body.request; // Get the search body from the request
+
+  //Split the search body into individuals keywords
+  const keywords = ingredientsRequested.split(" ");
+
+  // Use Mongoose methods to search for ingredients matching the requested ingredients
+  BabyRecipe.find({
+    $and: keywords.map((keywords) => ({
+      ingredients: {
+        $elemMatch: {
+          name:{$regex: keywords.replace(/[eé]/gi, "[eé]"), $options: "i" }}} // Search by ingredients 
+    }))
+  }).then((data) => {
+    if (data.length > 0) {
+      res.json({ result: "true", recipes: data });
+    } else {
+      res.json({ result: "false", error: "Pas de recette correspondante" });
+    }
+  });
+});
+
 module.exports = router;
