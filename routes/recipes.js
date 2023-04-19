@@ -137,7 +137,7 @@ router.post("/weekly", (req, res) => {
                   babyRecipes,
                   adultRecipes
                 );
-                console.log("randomizedcouples", randomizedWeeklyRecipes);
+                console.log("randomizedcouples", randomizedWeeklyRecipes);                      
 
                 // on update la collection household et on y pousse les 14 recettes
                 Household.updateOne(

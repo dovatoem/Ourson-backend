@@ -5,6 +5,13 @@ const kidsSchema = mongoose.Schema({
   ageMonths: Number,
 });
 
+const shoppingListSchema = mongoose.Schema({
+  name: String,
+  quantity: Number,
+  unit: String,
+  checked: Boolean
+});
+
 const householdSchema = mongoose.Schema({
   hhSize: Number,
   kidsCount: Number,
@@ -25,6 +32,7 @@ const householdSchema = mongoose.Schema({
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
   createdAt: Date,
   tastedFoods: [{ type: mongoose.Schema.Types.ObjectId, ref: "tastedFoods" }],
+  shoppingList: [shoppingListSchema],
 });
 
 const Household = mongoose.model("households", householdSchema);
