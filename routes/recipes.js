@@ -42,7 +42,7 @@ router.post("/weekly", (req, res) => {
 
         let timepast = Date.now() - household.createdAt;
         //Si >7 jours (604800000 ms) regeneration et on renvoie les recettes de weeklyRecipes
-        if (timepast > 604800000) {
+        if (timepast > 604800000 || household.weeklyRecipes === []) {
           //On va chercher toutes les recettes bébés
           BabyRecipe.find({ usage: "repas" }).then((babyRecipes) => {
             let babyIDList = babyRecipes.map((recipe) => recipe._id);
@@ -286,7 +286,7 @@ router.post("/removeLikedRecipe", (req, res) => {
   });
 });
 
-//route panic mode 
+//route panic mode
 router.post("/panicMode", (req, res) => {
   const ingredientsRequested = req.body.request; // Get the search body from the request
 
@@ -298,8 +298,10 @@ router.post("/panicMode", (req, res) => {
     $and: keywords.map((keywords) => ({
       ingredients: {
         $elemMatch: {
-          name:{$regex: keywords.replace(/[eé]/gi, "[eé]"), $options: "i" }}} // Search by ingredients 
-    }))
+          name: { $regex: keywords.replace(/[eé]/gi, "[eé]"), $options: "i" },
+        },
+      }, // Search by ingredients
+    })),
   }).then((data) => {
     if (data.length > 0) {
       res.json({ result: "true", recipes: data });
