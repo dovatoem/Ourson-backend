@@ -6,6 +6,7 @@ const BabyRecipe = require("../models/babyRecipes");
 const Household = require("../models/households");
 const User = require("../models/users");
 
+//fonction générant des nombres aléatoires sur 14 itérations en fonction du tableau passé en parametre
 function generateRandomRecipes(arr) {
   let recipeList = [];
   let mid = [];
@@ -21,6 +22,82 @@ function generateRandomRecipes(arr) {
   }
 
   return recipeList;
+}
+
+//fonction qui s'appuie sur une recette de bébé pour selectionner une recette adulte correspondante
+function getMatchPercentage(babyRecipe, adultRecipe) {
+  let commonIngredientsCount = 0;
+  let babyIngredientsCount = babyRecipe.ingredients.length;
+  let adultIngredientsCount = adultRecipe.ingredients.length;
+
+  babyRecipe.ingredients.forEach((babyIngredient) => {
+    adultRecipe.ingredients.forEach((adultIngredient) => {
+      if (babyIngredient.name.toString() === adultIngredient.name.toString()) {
+        commonIngredientsCount++;
+      }
+    });
+  });
+  let matchRate =
+    ((commonIngredientsCount / adultIngredientsCount) * 100 +
+      (commonIngredientsCount / babyIngredientsCount) * 100) /
+    2;
+  return matchRate;
+}
+
+//fonction qui va boucler sur les recettes bébés et adultes
+function generateMatchedRecipes(babyRecipes, adultRecipes) {
+  let matchedRecipes = [];
+
+  // Générer les couples de recettes avec leur pourcentage de correspondance
+  babyRecipes.forEach((babyRecipe) => {
+    adultRecipes.forEach((adultRecipe) => {
+      const matchPercentage = getMatchPercentage(babyRecipe, adultRecipe);
+      if (matchPercentage >= 30) {
+        matchedRecipes.push({
+          baby: babyRecipe._id,
+          adult: adultRecipe._id,
+          matchPercentage,
+        });
+      }
+    });
+  });
+
+  // Trier les couples de recettes par pertinence
+  matchedRecipes.sort((a, b) => b.matchPercentage - a.matchPercentage);
+  console.log(matchedRecipes.length);
+
+  // Extraire tous les identifiants de recettes bébés distincts présents dans matchedRecipes
+  const uniqueBabyRecipeIds = Array.from(
+    new Set(matchedRecipes.map((recipePair) => recipePair.baby.toString()))
+  );
+
+  // Sélectionner 14 recettes bébé uniques aléatoirement depuis la liste precedemment settée
+  let selectedBabyRecipes = new Set();
+  while (selectedBabyRecipes.size < 14) {
+    const randomIndex = Math.floor(Math.random() * uniqueBabyRecipeIds.length);
+    selectedBabyRecipes.add(uniqueBabyRecipeIds[randomIndex]);
+  }
+
+  // Chercher 14 couples aléatoires basés sur les 14 recettes bébés
+  let selectedMatchedRecipes = [];
+  for (const babyRecipe of selectedBabyRecipes) {
+    const matchedPair = matchedRecipes.find(
+      (recipePair) => recipePair.baby.toString() === babyRecipe.toString()
+    );
+    if (matchedPair) {
+      selectedMatchedRecipes.push({
+        baby: matchedPair.baby,
+        adult: matchedPair.adult,
+      });
+    } else {
+      console.log(
+        "No matching recipe pair found for baby recipe:",
+        babyRecipe._id
+      );
+    }
+  }
+
+  return selectedMatchedRecipes;
 }
 
 //weekly/POST (save dans la BD les 14 couples de recettes 1 baby + 1 adult,
@@ -48,46 +125,23 @@ router.post("/weekly", (req, res) => {
           let timepast = Date.now() - household.createdAt;
           //Si >7 jours (604800000 ms) regeneration et on renvoie les recettes de weeklyRecipes
 
-          if (timepast > 604800000 || household.weeklyRecipes.length === 0) {
+          if (timepast < 604800000 || household.weeklyRecipes.length === 0) {
             //On va chercher toutes les recettes bébés
             BabyRecipe.find({ usage: "repas" }).then((babyRecipes) => {
-              let babyIDList = babyRecipes.map((recipe) => recipe._id);
-              console.log(babyIDList);
-              let randomizedWeeklyBabyRecipes =
-                generateRandomRecipes(babyIDList);
-              console.log(randomizedWeeklyBabyRecipes);
-              // le reste de votre code pour générer et mettre à jour les recettes hebdomadaires
-
-              //On va chercher toutes les recettes parents
               AdultRecipe.find().then((adultRecipes) => {
-                let adultIDList = adultRecipes.map((recipe) => recipe._id);
-                console.log("adult", adultIDList);
-                // on en prend 14 avec des nombres aléatoires via la fonction generateRandomRecipes
-                let randomizedWeeklyAdultRecipes =
-                  generateRandomRecipes(adultIDList);
-                console.log(
-                  "randomizedAdultRecipes",
-                  randomizedWeeklyAdultRecipes
+                let randomizedWeeklyRecipes = generateMatchedRecipes(
+                  babyRecipes,
+                  adultRecipes
                 );
-
-                let randomizedWeeklyRecipes = [];
-                for (i = 0; i < 14; i++) {
-                  randomizedWeeklyRecipes.push({
-                    baby: randomizedWeeklyBabyRecipes[i],
-                    adult: randomizedWeeklyAdultRecipes[i],
-                  });
-                }
-
-                // on update la collection household et on y pousse les 14 recettes
                 console.log("randomizedcouples", randomizedWeeklyRecipes);
 
+                // on update la collection household et on y pousse les 14 recettes
                 Household.updateOne(
                   { _id: household._id },
                   { weeklyRecipes: randomizedWeeklyRecipes }
                 ).then((data) => {
                   if (data.modifiedCount > 0) {
                     // reset du createdAt.
-
                     Household.updateOne(
                       { _id: household._id },
                       { createdAt: Date.now() }
