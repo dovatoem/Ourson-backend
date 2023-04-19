@@ -36,108 +36,115 @@ router.post("/weekly", (req, res) => {
       return;
     }
     // avec cet id aller chercher l'household correspondant
-    Household.findOne({ users: user._id }).then((household) => {
-      if (household) {
-        // comparaison de la derniere génération des recettes.
+    Household.findOne({ users: user._id })
+      .populate({
+        path: "weeklyRecipes",
+        populate: [{ path: "adult" }, { path: "baby" }],
+      })
+      .then((household) => {
+        if (household) {
+          // comparaison de la derniere génération des recettes.
 
-        let timepast = Date.now() - household.createdAt;
-        //Si >7 jours (604800000 ms) regeneration et on renvoie les recettes de weeklyRecipes
-        if (timepast > 604800000 || household.weeklyRecipes === []) {
-          //On va chercher toutes les recettes bébés
-          BabyRecipe.find({ usage: "repas" }).then((babyRecipes) => {
-            let babyIDList = babyRecipes.map((recipe) => recipe._id);
-            console.log(babyIDList);
-            let randomizedWeeklyBabyRecipes = generateRandomRecipes(babyIDList);
-            console.log(randomizedWeeklyBabyRecipes);
-            // le reste de votre code pour générer et mettre à jour les recettes hebdomadaires
+          let timepast = Date.now() - household.createdAt;
+          //Si >7 jours (604800000 ms) regeneration et on renvoie les recettes de weeklyRecipes
 
-            //On va chercher toutes les recettes parents
-            AdultRecipe.find().then((adultRecipes) => {
-              let adultIDList = adultRecipes.map((recipe) => recipe._id);
-              console.log("adult", adultIDList);
-              // on en prend 14 avec des nombres aléatoires via la fonction generateRandomRecipes
-              let randomizedWeeklyAdultRecipes =
-                generateRandomRecipes(adultIDList);
-              console.log(
-                "randomizedAdultRecipes",
-                randomizedWeeklyAdultRecipes
-              );
+          if (timepast > 604800000 || household.weeklyRecipes.length === 0) {
+            //On va chercher toutes les recettes bébés
+            BabyRecipe.find({ usage: "repas" }).then((babyRecipes) => {
+              let babyIDList = babyRecipes.map((recipe) => recipe._id);
+              console.log(babyIDList);
+              let randomizedWeeklyBabyRecipes =
+                generateRandomRecipes(babyIDList);
+              console.log(randomizedWeeklyBabyRecipes);
+              // le reste de votre code pour générer et mettre à jour les recettes hebdomadaires
 
-              let randomizedWeeklyRecipes = [];
-              for (i = 0; i < 14; i++) {
-                randomizedWeeklyRecipes.push({
-                  baby: randomizedWeeklyBabyRecipes[i],
-                  adult: randomizedWeeklyAdultRecipes[i],
-                });
-              }
+              //On va chercher toutes les recettes parents
+              AdultRecipe.find().then((adultRecipes) => {
+                let adultIDList = adultRecipes.map((recipe) => recipe._id);
+                console.log("adult", adultIDList);
+                // on en prend 14 avec des nombres aléatoires via la fonction generateRandomRecipes
+                let randomizedWeeklyAdultRecipes =
+                  generateRandomRecipes(adultIDList);
+                console.log(
+                  "randomizedAdultRecipes",
+                  randomizedWeeklyAdultRecipes
+                );
 
-              // on update la collection household et on y pousse les 14 recettes
-              console.log("randomizedcouples", randomizedWeeklyRecipes);
+                let randomizedWeeklyRecipes = [];
+                for (i = 0; i < 14; i++) {
+                  randomizedWeeklyRecipes.push({
+                    baby: randomizedWeeklyBabyRecipes[i],
+                    adult: randomizedWeeklyAdultRecipes[i],
+                  });
+                }
 
-              Household.updateOne(
-                { _id: household._id },
-                { weeklyRecipes: randomizedWeeklyRecipes }
-              ).then((data) => {
-                if (data.modifiedCount > 0) {
-                  // reset du createdAt.
+                // on update la collection household et on y pousse les 14 recettes
+                console.log("randomizedcouples", randomizedWeeklyRecipes);
 
-                  Household.updateOne(
-                    { _id: household._id },
-                    { createdAt: Date.now() }
-                  ).then((data) => {
-                    if (data.modifiedCount > 0) {
-                      Household.findOne({ _id: household._id })
-                        .populate({
-                          path: "weeklyRecipes",
-                          populate: [{ path: "adult" }, { path: "baby" }],
-                        })
-                        .then((data) => {
-                          res.json({
-                            result: true,
-                            recipes: data.weeklyRecipes,
+                Household.updateOne(
+                  { _id: household._id },
+                  { weeklyRecipes: randomizedWeeklyRecipes }
+                ).then((data) => {
+                  if (data.modifiedCount > 0) {
+                    // reset du createdAt.
+
+                    Household.updateOne(
+                      { _id: household._id },
+                      { createdAt: Date.now() }
+                    ).then((data) => {
+                      if (data.modifiedCount > 0) {
+                        Household.findOne({ _id: household._id })
+                          .populate({
+                            path: "weeklyRecipes",
+                            populate: [{ path: "adult" }, { path: "baby" }],
+                          })
+                          .then((data) => {
+                            res.json({
+                              result: true,
+                              recipes: data.weeklyRecipes,
+                            });
                           });
-                        });
-                    }
+                      }
+                    });
+                  } else {
+                    res.json({
+                      result: false,
+                      error: "Recipes were not updated",
+                    });
+                  }
+                });
+              });
+            });
+          }
+          //Sinon on prend les recettes de Weekly recipes.
+          else {
+            Household.findOne({ _id: household._id })
+              .populate({
+                path: "weeklyRecipes",
+                populate: [{ path: "adult" }, { path: "baby" }],
+              })
+              .then((data) => {
+                console.log(data);
+                if (data.weeklyRecipes === []) {
+                  res.json({
+                    result: true,
+                    recipes: data.weeklyRecipes,
                   });
                 } else {
                   res.json({
                     result: false,
-                    error: "Recipes were not updated",
+                    error: "No recipe was found",
                   });
                 }
               });
-            });
+          }
+        } else {
+          res.json({
+            result: false,
+            error: "User is not linked to any household",
           });
         }
-        //Sinon on prend les recettes de Weekly recipes.
-        else {
-          Household.findOne({ _id: household._id })
-            .populate({
-              path: "weeklyRecipes",
-              populate: [{ path: "adult" }, { path: "baby" }],
-            })
-            .then((data) => {
-              console.log(data);
-              if (data) {
-                res.json({
-                  result: true,
-                  recipes: data.weeklyRecipes,
-                });
-              } else {
-                res.json({
-                  result: false,
-                  error: "No recipe was found",
-                });
-              }
-            });
-        }
-      } else {
-        res.json({
-          result: false,
-          error: "User is not linked to any household",
-        });
-      }
-    });
+      });
   });
 });
 
