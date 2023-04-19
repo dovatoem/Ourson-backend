@@ -121,7 +121,7 @@ router.post("/profile", (req, res) => {
               kids: kids,
               diet: null,
               users: user._id,
-              createdAt: new Date().now(),
+              createdAt: new Date(),
             });
             newHH.save().then((newDoc) => {
               res.json({ result: true, household: newDoc });
