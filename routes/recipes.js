@@ -125,7 +125,7 @@ router.post("/weekly", (req, res) => {
               })
               .then((data) => {
                 console.log(data);
-                if (data.weeklyRecipes === []) {
+                if (data.weeklyRecipes.length > 0) {
                   res.json({
                     result: true,
                     recipes: data.weeklyRecipes,
