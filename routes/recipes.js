@@ -289,10 +289,9 @@ router.post("/removeLikedRecipe", (req, res) => {
 //route panic mode 
 router.post("/panicMode", (req, res) => {
   const ingredientsRequested = req.body.request; // Get the search body from the request
-
+  
   //Split the search body into individuals keywords
-  const keywords = ingredientsRequested.split(" ");
-
+  const keywords = ingredientsRequested.split(", ");
   // Use Mongoose methods to search for ingredients matching the requested ingredients
   BabyRecipe.find({
     $and: keywords.map((keywords) => ({
