@@ -30,13 +30,17 @@ function getMatchPercentage(babyRecipe, adultRecipe) {
   let babyIngredientsCount = babyRecipe.ingredients.length;
   let adultIngredientsCount = adultRecipe.ingredients.length;
 
+  // PERF Créez un index pour les ingrédients de la recette adulte
+  const adultIngredientsIndex = new Set(
+    adultRecipe.ingredients.map((ingredient) => ingredient.name.toString())
+  );
+
   babyRecipe.ingredients.forEach((babyIngredient) => {
-    adultRecipe.ingredients.forEach((adultIngredient) => {
-      if (babyIngredient.name.toString() === adultIngredient.name.toString()) {
-        commonIngredientsCount++;
-      }
-    });
+    if (adultIngredientsIndex.has(babyIngredient.name.toString())) {
+      commonIngredientsCount++;
+    }
   });
+
   let matchRate =
     ((commonIngredientsCount / adultIngredientsCount) * 100 +
       (commonIngredientsCount / babyIngredientsCount) * 100) /
@@ -125,7 +129,7 @@ router.post("/weekly", (req, res) => {
           let timepast = Date.now() - household.createdAt;
           //Si >7 jours (604800000 ms) regeneration et on renvoie les recettes de weeklyRecipes
 
-          if (timepast > 604800000 || household.weeklyRecipes.length === 0) {
+          if (timepast < 604800000 || household.weeklyRecipes.length === 0) {
             //On va chercher toutes les recettes bébés
             BabyRecipe.find({ usage: "repas" }).then((babyRecipes) => {
               AdultRecipe.find().then((adultRecipes) => {
@@ -138,28 +142,23 @@ router.post("/weekly", (req, res) => {
                 // on update la collection household et on y pousse les 14 recettes
                 Household.updateOne(
                   { _id: household._id },
-                  { weeklyRecipes: randomizedWeeklyRecipes }
+                  {
+                    weeklyRecipes: randomizedWeeklyRecipes,
+                    createdAt: Date.now(),
+                  }
                 ).then((data) => {
                   if (data.modifiedCount > 0) {
-                    // reset du createdAt.
-                    Household.updateOne(
-                      { _id: household._id },
-                      { createdAt: Date.now() }
-                    ).then((data) => {
-                      if (data.modifiedCount > 0) {
-                        Household.findOne({ _id: household._id })
-                          .populate({
-                            path: "weeklyRecipes",
-                            populate: [{ path: "adult" }, { path: "baby" }],
-                          })
-                          .then((data) => {
-                            res.json({
-                              result: true,
-                              recipes: data.weeklyRecipes,
-                            });
-                          });
-                      }
-                    });
+                    Household.findOne({ _id: household._id })
+                      .populate({
+                        path: "weeklyRecipes",
+                        populate: [{ path: "adult" }, { path: "baby" }],
+                      })
+                      .then((data) => {
+                        res.json({
+                          result: true,
+                          recipes: data.weeklyRecipes,
+                        });
+                      });
                   } else {
                     res.json({
                       result: false,
