@@ -31,6 +31,22 @@ router.get("/", (req, res) => {
   });
 });
 
+router.get("/foodList", (req, res) => {
+  TastedFood.find().then((tastedFood) => {
+    if (tastedFood) {
+      res.json({
+        result: true,
+        recipes: tastedFood,
+      });
+    } else {
+      res.json({
+        result: false,
+        error: "TastedFood not found",
+      });
+    }
+  });
+});
+
 router.put("/addTastedFood", (req, res) => {
   //recuperer l'id de l'user via le token
   User.findOne({ token: req.body.token }).then((user) => {
