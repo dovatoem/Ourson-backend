@@ -9,7 +9,7 @@ const shoppingListSchema = mongoose.Schema({
   name: String,
   quantity: Number,
   unit: String,
-  checked: Boolean
+  checked: Boolean,
 });
 
 const householdSchema = mongoose.Schema({
@@ -32,6 +32,7 @@ const householdSchema = mongoose.Schema({
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
   createdAt: Date,
   tastedFoods: [{ type: mongoose.Schema.Types.ObjectId, ref: "tastedFoods" }],
+  foodList: [{ type: mongoose.Schema.Types.ObjectId, ref: "tastedFoods" }],
   shoppingList: [shoppingListSchema],
 });
 
