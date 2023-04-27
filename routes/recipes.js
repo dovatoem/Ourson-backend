@@ -129,7 +129,7 @@ router.post("/weekly", (req, res) => {
           let timepast = Date.now() - household.createdAt;
           //Si >7 jours (604800000 ms) regeneration et on renvoie les recettes de weeklyRecipes
 
-          if (timepast < 604800000 || household.weeklyRecipes.length === 0) {
+          if (timepast > 604800000 || household.weeklyRecipes.length === 0) {
             //On va chercher toutes les recettes bébés
             BabyRecipe.find({ usage: "repas" }).then((babyRecipes) => {
               AdultRecipe.find().then((adultRecipes) => {
@@ -137,7 +137,7 @@ router.post("/weekly", (req, res) => {
                   babyRecipes,
                   adultRecipes
                 );
-                console.log("randomizedcouples", randomizedWeeklyRecipes);                      
+                console.log("randomizedcouples", randomizedWeeklyRecipes);
 
                 // on update la collection household et on y pousse les 14 recettes
                 Household.updateOne(
@@ -221,37 +221,6 @@ router.post("/searchKeyWord", (req, res) => {
     }
   });
 });
-
-// router.get("/allLikedRecipes"),
-//   (req, res) => {
-//     // Récupérer l'id de l'user via le token
-//     User.findOne({ token: req.body.token }).then((user) => {
-//       console.log("user", user);
-//       if (user === null) {
-//         res.json({ result: false, error: "User not found" });
-//         return;
-//       }
-//       // Avec cet id aller chercher l'household correspondant
-//       Household.findOne({ users: user._id })
-//         .populate({
-//           path: "likedRecipes",
-//           populate: [{ path: "adult" }, { path: "baby" }],
-//         })
-//         .then((household) => {
-//           if (household) {
-//             res.json({
-//               result: true,
-//               recipes: data.likedRecipes,
-//             });
-//           } else {
-//             res.json({
-//               result: false,
-//               error: "Liked recipe was not added",
-//             });
-//           }
-//         });
-//     });
-//   };
 
 router.post("/addLikedRecipe", (req, res) => {
   // Récupérer l'id de l'user via le token
@@ -349,7 +318,7 @@ router.post("/removeLikedRecipe", (req, res) => {
 //route panic mode
 router.post("/panicMode", (req, res) => {
   const ingredientsRequested = req.body.request; // Get the search body from the request
-  
+
   //Split the search body into individuals keywords
   const keywords = ingredientsRequested.split(", ");
   // Use Mongoose methods to search for ingredients matching the requested ingredients
