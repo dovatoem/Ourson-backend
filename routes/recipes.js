@@ -66,7 +66,7 @@ function generateMatchedRecipes(babyRecipes, adultRecipes) {
     });
   });
 
-  // Trier les couples de recettes par pertinence
+  // Trier les couples de recettes selon un ordre descendant
   matchedRecipes.sort((a, b) => b.matchPercentage - a.matchPercentage);
   console.log(matchedRecipes.length);
 
@@ -76,7 +76,7 @@ function generateMatchedRecipes(babyRecipes, adultRecipes) {
   );
 
   // Sélectionner 14 recettes bébé uniques aléatoirement depuis la liste precedemment settée
-  let selectedBabyRecipes = new Set();
+  let selectedBabyRecipes = new Set(); 
   while (selectedBabyRecipes.size < 14) {
     const randomIndex = Math.floor(Math.random() * uniqueBabyRecipeIds.length);
     selectedBabyRecipes.add(uniqueBabyRecipeIds[randomIndex]);
@@ -100,7 +100,7 @@ function generateMatchedRecipes(babyRecipes, adultRecipes) {
       );
     }
   }
-
+// Retourne un tableau d'objets avec baby et adult recipe ID
   return selectedMatchedRecipes;
 }
 
@@ -132,6 +132,7 @@ router.post("/weekly", (req, res) => {
           if (timepast > 604800000 || household.weeklyRecipes.length === 0) {
             //On va chercher toutes les recettes bébés
             BabyRecipe.find({ usage: "repas" }).then((babyRecipes) => {
+              //On va chercher toutes les recettes adultes
               AdultRecipe.find().then((adultRecipes) => {
                 let randomizedWeeklyRecipes = generateMatchedRecipes(
                   babyRecipes,
