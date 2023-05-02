@@ -6,24 +6,6 @@ const BabyRecipe = require("../models/babyRecipes");
 const Household = require("../models/households");
 const User = require("../models/users");
 
-//fonction générant des nombres aléatoires sur 14 itérations en fonction du tableau passé en parametre
-function generateRandomRecipes(arr) {
-  let recipeList = [];
-  let mid = [];
-  let arr2 = [...arr];
-  for (let i = 0; i < 14; i++) {
-    let randomNumber = Math.floor(Math.random() * arr2.length);
-    mid.push(arr2[randomNumber]);
-    arr2.splice(randomNumber, 1);
-  }
-
-  for (let i = 0; i < 14; i++) {
-    recipeList.push(mid[i]);
-  }
-
-  return recipeList;
-}
-
 //fonction qui s'appuie sur une recette de bébé pour selectionner une recette adulte correspondante
 function getMatchPercentage(babyRecipe, adultRecipe) {
   let commonIngredientsCount = 0;
@@ -105,7 +87,6 @@ function generateMatchedRecipes(babyRecipes, adultRecipes) {
 }
 
 //weekly/POST (save dans la BD les 14 couples de recettes 1 baby + 1 adult,
-//  match via in$ dans MongoDB, envoyer dans le front la recette avec les portions en fonction du HH,
 //  1 fetch pour chaque jour de la semaine)
 
 router.post("/weekly", (req, res) => {
