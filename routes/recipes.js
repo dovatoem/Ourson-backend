@@ -321,4 +321,46 @@ router.post("/panicMode", (req, res) => {
   });
 });
 
+router.post("/updateShoppingList", (req, res) => {
+  // Récupérer l'id de l'user via le token
+  User.findOne({ token: req.body.token }).then((user) => {
+    console.log("user", user);
+    if (user === null) {
+      res.json({ result: false, error: "User not found" });
+      return;
+    }
+    // Avec cet id aller chercher l'household correspondant
+    Household.findOne({ users: user._id }).then((household) => {
+      if (household) {
+        // Mettre à jour la shoppingList
+        Household.updateOne(
+          { _id: household._id },
+          { shoppingList: req.body.shoppingList }
+        ).then((data) => {
+          if (data.modifiedCount > 0) {
+            // Renvoyer le foyer avec la liste de course mise à jour
+            Household.findOne({ _id: household._id })              
+              .then((data) => {
+                res.json({
+                  result: true,
+                  shoppingList: data.shoppingList,
+                });
+              });
+          } else {
+            res.json({
+              result: false,
+              error: "shoppingList wasn't updated",
+            });
+          }
+        });
+      } else {
+        res.json({
+          result: false,
+          error: "Household not found",
+        });
+      }
+    });
+  });
+});
+
 module.exports = router;
