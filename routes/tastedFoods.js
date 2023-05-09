@@ -19,7 +19,7 @@ router.get("/", (req, res) => {
         if (household) {
           res.json({
             result: true,
-            recipes: household.tastedFoods,
+            tastedFoods: household.tastedFoods,
           });
         } else {
           res.json({
@@ -36,7 +36,7 @@ router.get("/foodList", (req, res) => {
     if (tastedFood) {
       res.json({
         result: true,
-        recipes: tastedFood,
+        foodList: tastedFood,
       });
     } else {
       res.json({
@@ -71,7 +71,7 @@ router.put("/addTastedFood", (req, res) => {
                 .then((data) => {
                   res.json({
                     result: true,
-                    recipes: data.tastedFoods,
+                    tastedFoods: data.tastedFoods,
                   });
                 });
             } else {
