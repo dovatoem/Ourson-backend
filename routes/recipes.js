@@ -58,13 +58,17 @@ function generateMatchedRecipes(babyRecipes, adultRecipes) {
   );
 
   // Sélectionner 14 recettes bébé uniques aléatoirement depuis la liste precedemment settée
-  let selectedBabyRecipes = new Set(); 
+  let selectedBabyRecipes = new Set();
   while (selectedBabyRecipes.size < 14) {
     const randomIndex = Math.floor(Math.random() * uniqueBabyRecipeIds.length);
-    selectedBabyRecipes.add(uniqueBabyRecipeIds[randomIndex]);
+    const selectedRecipe = uniqueBabyRecipeIds[randomIndex];
+
+    if (!selectedBabyRecipes.has(selectedRecipe)) {
+      selectedBabyRecipes.add(selectedRecipe);
+    }
   }
 
-  // Chercher 14 couples aléatoires basés sur les 14 recettes bébés
+  // Chercher 14 couples basés sur les 14 recettes bébés uniques et aléatoires
   let selectedMatchedRecipes = [];
   for (const babyRecipe of selectedBabyRecipes) {
     const matchedPair = matchedRecipes.find(
@@ -82,7 +86,7 @@ function generateMatchedRecipes(babyRecipes, adultRecipes) {
       );
     }
   }
-// Retourne un tableau d'objets avec baby et adult recipe ID
+  // Retourne un tableau d'objets avec baby et adult recipe ID
   return selectedMatchedRecipes;
 }
 
@@ -339,13 +343,12 @@ router.post("/updateShoppingList", (req, res) => {
         ).then((data) => {
           if (data.modifiedCount > 0) {
             // Renvoyer le foyer avec la liste de course mise à jour
-            Household.findOne({ _id: household._id })              
-              .then((data) => {
-                res.json({
-                  result: true,
-                  shoppingList: data.shoppingList,
-                });
+            Household.findOne({ _id: household._id }).then((data) => {
+              res.json({
+                result: true,
+                shoppingList: data.shoppingList,
               });
+            });
           } else {
             res.json({
               result: false,
